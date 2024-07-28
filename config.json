@@ -1,0 +1,34 @@
+{
+  "language": "en",
+  "useEnvForCredentials": false,
+  "envGuide": "When useEnvForCredentials enabled, it will use the process.env key provided for email and password, which helps hide your credentials, you can find env in render's environment tab, you can also find it in replit secrets.",
+  "DeveloperMode": true,
+  "autoCreateDB": true,
+  "allowInbox": false,
+  "autoClean": true,
+  "adminOnly": false,
+  "autoCensor": true,
+  "commandDisabled": [],
+  "eventDisabled": [],
+  "BOTNAME": "Mirai Recoded",
+  "PREFIX": "$",
+  "ADMINBOT": [
+    "< replace with userID >",
+    "< replace with userID >",
+    "< add comma and you can add more userIDs >"
+  ],
+  "APPSTATEPATH": "appstate.json",
+  "APPSTATE_GUIDE": "If you want to use environment variables as appstate, you can set the APPSTATEPATH as 'env:APPSTATE_KEY_HERE' ",
+  "DEL_FUNCTION": false,
+  "ADD_FUNCTION": true,
+  "FCAOption": {
+    "forceLogin": false,
+    "listenEvents": true,
+    "autoMarkDelivery": false,
+    "autoMarkRead": false,
+    "logLevel": "error",
+    "selfListen": false,
+    "online": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3 Safari/600.3.18"
+  }
+}

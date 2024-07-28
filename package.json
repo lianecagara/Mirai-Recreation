@@ -13,6 +13,7 @@
     "@types/node": "^18.0.6",
     "fca-unofficial": "^1.3.10",
     "gradient-string": "^2.0.2",
+    "moment-timezone": "^0.5.45",
     "ts-node": "^10.9.2"
   }
 }
