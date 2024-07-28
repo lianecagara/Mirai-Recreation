@@ -1,15 +1,18 @@
 {
-  "name": "nodejs",
+  "name": "Mirai-Recoded",
   "version": "1.0.0",
-  "description": "",
+  "description": "Basically, I tried programming my own bot while copying most of Mirai Bot Features, using my own logic.\nI don't recommend using this.\nThis is also unfinished!",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Liane Cagara",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^18.0.6"
+    "@types/node": "^18.0.6",
+    "fca-unofficial": "^1.3.10",
+    "gradient-string": "^2.0.2",
+    "ts-node": "^10.9.2"
   }
 }
