@@ -6,6 +6,17 @@ import fs from "fs";
 import { execSync } from "child_process";
 import { join } from "path";
 
+/** WARN: Everything here is my code (Liane Cagara 🎀)
+ * I did not directly copy pasted anything from mirai/botpack source code!
+ * You can compare both of these codes to verify yourself.
+ * Most of the codes below uses Modern ECMASCRIPT Specifications, make sure your NodeJS is up-to-date.
+ * Do not attempt to use this project without contacting me, this project is not yet finished, something weird might happen LMAO.
+ * Unexpected Behaviors are expected.
+ * This is not ESM, this is Typescript CJS
+ * Be careful when using this project, and do not test your mirai/botpack commands using this project and share it to original botpack/mirai users, the command might not work as expected
+ * This source code is not an exact copy.
+ */
+
 // i did for the sake of reuse.
 const timeZone = "Asia/Manila";
 
@@ -153,28 +164,111 @@ global.liane = {
       const { dependencies } = config;
       if (dependencies) {
         for (const [name, version] of Object.entries(dependencies)) {
+          const currentVer = pkg.dependencies[name];
+          if (currentVer && currentVer === version && version !== "latest") {
+            continue;
+          }
           this.installPackage(name + (version ? `@${version}` : ""));
         }
       }
+      // this is helpful for debugging LMAO
+      command.fileName = fileName;
       commands.set(config.name, command);
-    } catch (error) {
-      throw error;
-    }
-  },
-  async unloadCommand(fileName) {
-    try {
     } catch (error) {
       throw error;
     }
   },
   async loadEvent(fileName, force) {
     try {
+      const cache = require.resolve(__dirname + "/modules/events/" + fileName);
+      if (cache) {
+        delete require.cache[cache];
+      }
+      const command = require(`./modules/events/${fileName}`);
+
+      // let's go gambling!
+      const { config } = command;
+      if (typeof config !== "object") {
+        // aw, DANG IT!
+        throw new TypeError(
+          `The module.exports["config"] must be an objecy contaning command configuration like .name: string, .category: string and .usePrefix: boolean, received ${typeof config}.`,
+        );
+      }
+      if (typeof config.name !== "string" || config.name.length < 1) {
+        throw new TypeError(
+          `The module.exports.config["name"] is a string that acts as a name for the command, it must be a string or enclosed in "" or '', received: ${typeof config.name}.`,
+        );
+      }
+      const { events } = global.client;
+      if (events.has(config.name) && !force) {
+        throw new Error(
+          `The event name "${config.name}" is already used by another command.`,
+        );
+      }
+      if (typeof command.onLoad === "function") {
+        await command.onLoad({ api: global.recodedExtras.api });
+      }
+      const { dependencies } = config;
+      if (dependencies) {
+        for (const [name, version] of Object.entries(dependencies)) {
+          const currentVer = pkg.dependencies[name];
+          if (currentVer && currentVer === version && version !== "latest") {
+            continue;
+          }
+          this.installPackage(name + (version ? `@${version}` : ""));
+        }
+      }
+      command.fileName = fileName;
+      events.set(config.name, command);
+    } catch (error) {
+      throw error;
+    }
+  },
+  async unloadCommand(fileName) {
+    try {
+      // I made my own logic because the one in command.js sucks a lot.
+
+      const { commandDisabled = [] } = global.config;
+      if (commandDisabled.includes(fileName)) {
+        throw new Error(`The command "${fileName}" is already unloaded.`);
+      }
+      const { commands } = global.client;
+      const currentLoaded =
+        Array.from(commands).find(([, { fileName: i }]) => i === fileName) ??
+        [];
+      if (commands.has(currentLoaded[0])) {
+        commands.delete(currentLoaded[0]);
+      } else {
+        throw new Error(`The command "${fileName}" is not actually loaded.`);
+      }
+      commandDisabled.push(fileName);
+      global.recodedExtras.saveConfig({
+        ...global.config,
+        commandDisabled,
+      });
     } catch (error) {
       throw error;
     }
   },
   async unloadEvent(fileName) {
     try {
+      const { eventDisabled = [] } = global.config;
+      if (commandDisabled.includes(fileName)) {
+        throw new Error(`The event "${fileName}" is already unloaded.`);
+      }
+      const { events } = global.client;
+      const currentLoaded =
+        Array.from(events).find(([, { fileName: i }]) => i === fileName) ?? [];
+      if (commands.has(currentLoaded[0])) {
+        commands.delete(currentLoaded[0]);
+      } else {
+        throw new Error(`The event "${fileName}" is not actually loaded.`);
+      }
+      eventDisabled.push(fileName);
+      global.recodedExtras.saveConfig({
+        ...global.config,
+        eventDisabled,
+      });
     } catch (error) {
       throw error;
     }
@@ -193,7 +287,11 @@ global.liane = {
       await fsp.readdir(global.client.mainPath + "/modules/commands"),
     );
     const results = [];
+    const { commandDisabled = [] } = global.config;
     for (const file of files) {
+      if (commandDisabled.includes(file)) {
+        continue;
+      }
       try {
         const command = await this.loadCommand(file, force);
         results.push({
@@ -218,7 +316,11 @@ global.liane = {
       await fsp.readdir(global.client.mainPath + "/modules/events"),
     );
     const results = [];
+    const { eventDisabled = [] } = global.config;
     for (const file of files) {
+      if (eventDisabled.includes(file)) {
+        continue;
+      }
       try {
         const event = await this.loadCommand(file, force);
         results.push({
