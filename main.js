@@ -83,6 +83,16 @@ global.recodedExtras = {
   },
 };
 
+// This is the simplest implementation, better than STORING EVERYTHING IN AN OBJECT.
+global.nodemodule = new Proxy(
+  {},
+  {
+    get(_, prop) {
+      return require(prop);
+    },
+  },
+);
+
 // why class? I just want to annoy..
 global.data = class {
   static allUserID = [];
@@ -104,10 +114,13 @@ global.data = class {
 function logger(content, type = "info") {
   console.log(`[ ${String(type).toUpperCase()} ]`, content);
 }
+const handlerPath = (i) => `./handlerFiles/handle${i}`;
+const { handleListen } = require(handlerPath("Listen"));
+
 const pkg = require("./package.json");
 // bot start logics..
 async function main() {
-  logger(`Mirai Recoded v${pkg.version}, "info"`);
+  logger(`Mirai Recoded v${pkg.version}`, "info");
   Object.defineProperty(global, "config", {
     get() {
       return global.recodedExtras.config;
@@ -146,12 +159,14 @@ async function main() {
   try {
     api = await login({ appState });
   } catch (error) {
-    logger(error, "Login");
+    logger(error.error ?? error, "Login");
     process.exit(1);
   }
   logger(`Login Success! ID: ${api.getCurrentUserID()}`, "Login");
   global.recodedExtras.api = api;
   api.setOptions(config.FCAOption);
+  logger("Listener Setup...", "Listen");
+  api.listen(handleListen);
 }
 
 main();
