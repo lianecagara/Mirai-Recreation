@@ -342,6 +342,7 @@ global.liane = {
     }
     return results;
   },
+  logger,
 };
 
 // This is the simplest implementation, better than STORING EVERYTHING IN AN OBJECT.
@@ -443,7 +444,16 @@ async function main() {
   global.recodedExtras.api = api;
   api.setOptions(config.FCAOption);
   logger("Listener Setup...", "Listen");
-  api.listen(handleListen);
+  api.listen(async (err, event) => {
+    if (err) {
+      return logger(err, "ListenError");
+    }
+    try {
+      await handleListen({ api, event });
+    } catch (error) {
+      logger(err, "ListenError");
+    }
+  });
 }
 
 main();
