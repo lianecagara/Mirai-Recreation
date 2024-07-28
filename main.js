@@ -174,6 +174,7 @@ global.liane = {
       // this is helpful for debugging LMAO
       command.fileName = fileName;
       commands.set(config.name, command);
+      return command;
     } catch (error) {
       throw error;
     }
@@ -220,6 +221,7 @@ global.liane = {
       }
       command.fileName = fileName;
       events.set(config.name, command);
+      return command;
     } catch (error) {
       throw error;
     }
@@ -328,7 +330,7 @@ global.liane = {
           data: event,
           error: null,
         });
-        await callback(null, file, command);
+        await callback(null, file, event);
       } catch (error) {
         results.push({
           file,
