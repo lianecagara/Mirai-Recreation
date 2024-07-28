@@ -3,6 +3,8 @@ import login from "./fca-unofficial/promises";
 import fsp from "fs/promises";
 import moment from "moment-timezone";
 import fs from "fs";
+import { execSync } from "child_process";
+import { join } from "path";
 
 // i did for the sake of reuse.
 const timeZone = "Asia/Manila";
@@ -80,6 +82,161 @@ global.recodedExtras = {
   saveConfig(config) {
     fs.writeFileSync(global.client.configPath, JSON.stringify(config, null, 2));
     this.configCache = config;
+  },
+};
+
+// I can't put it to global.client for incompatibility reasons, also recodedExtras sounds too long, maybe I'll just use my 5 letter name..?
+global.liane = {
+  // I made my own command loader stuffs that are reusable because mirai and botpack counterpart of this are not reusable, and it sucks a lot.
+  installPackage(name) {
+    try {
+      execSync(`npm --package-lock false --save install ${name}`, {
+        stdio: "inherit",
+        env: process.env,
+        shell: true,
+        cwd: join(__dirname, "node_modules"),
+      });
+      const cache = require.resolve(name);
+      if (cache) {
+        delete require.cache[cache];
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+  async loadCommand(fileName, force) {
+    try {
+      const cache = require.resolve(
+        __dirname + "/modules/commands/" + fileName,
+      );
+      if (cache) {
+        delete require.cache[cache];
+      }
+      const command = require(`./modules/commands/${fileName}`);
+
+      // let's go gambling!
+      const { run, config } = command;
+      if (typeof run !== "function") {
+        // aw, DANG IT!
+        throw new TypeError(
+          `The module.exports["run"] must be a function, received ${typeof run}`,
+        );
+      }
+      if (typeof config !== "object") {
+        // aw, DANG IT!
+        throw new TypeError(
+          `The module.exports["config"] must be an objecy contaning command configuration like .name: string, .category: string and .usePrefix: boolean, received ${typeof config}.`,
+        );
+      }
+      if (typeof config.name !== "string" || config.name.length < 1) {
+        throw new TypeError(
+          `The module.exports.config["name"] is a string that acts as a name for the command, it must be a string or enclosed in "" or '', received: ${typeof config.name}.`,
+        );
+      }
+      if (
+        typeof config.commandCategory !== "string" ||
+        config.commandCategory.length < 1
+      ) {
+        throw new TypeError(
+          `The module.exports.config["commandCategory"] is a string that acts as a classification for some bot commands and has no good usage other than help list and that NSFW feature. Received: ${typeof config.commandCategory}`,
+        );
+      }
+      const { commands } = global.client;
+      if (commands.has(config.name) && !force) {
+        throw new Error(
+          `The command name "${config.name}" is already used by another command.`,
+        );
+      }
+      if (typeof command.onLoad === "function") {
+        await command.onLoad({ api: global.recodedExtras.api });
+      }
+      const { dependencies } = config;
+      if (dependencies) {
+        for (const [name, version] of Object.entries(dependencies)) {
+          this.installPackage(name + (version ? `@${version}` : ""));
+        }
+      }
+      commands.set(config.name, command);
+    } catch (error) {
+      throw error;
+    }
+  },
+  async unloadCommand(fileName) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  },
+  async loadEvent(fileName, force) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  },
+  async unloadEvent(fileName) {
+    try {
+    } catch (error) {
+      throw error;
+    }
+  },
+  validateFileType(files) {
+    return files.filter(
+      (i) =>
+        i.endsWith(".js") ||
+        i.endsWith(".ts") ||
+        i.endsWith(".cjs") ||
+        i.endsWith(".mjs"),
+    );
+  },
+  async loadAllCommands(callback = async function () {}, force) {
+    const files = this.validateFileType(
+      await fsp.readdir(global.client.mainPath + "/modules/commands"),
+    );
+    const results = [];
+    for (const file of files) {
+      try {
+        const command = await this.loadCommand(file, force);
+        results.push({
+          file,
+          data: command,
+          error: null,
+        });
+        await callback(null, file, command);
+      } catch (error) {
+        results.push({
+          file,
+          error,
+          data: null,
+        });
+        await callback(error, file, null);
+      }
+    }
+    return results;
+  },
+  async loadAllEvents(callback = async function () {}, force) {
+    const files = this.validateFileType(
+      await fsp.readdir(global.client.mainPath + "/modules/events"),
+    );
+    const results = [];
+    for (const file of files) {
+      try {
+        const event = await this.loadCommand(file, force);
+        results.push({
+          file,
+          data: event,
+          error: null,
+        });
+        await callback(null, file, command);
+      } catch (error) {
+        results.push({
+          file,
+          error,
+          data: null,
+        });
+        await callback(error, file, null);
+      }
+    }
+    return results;
   },
 };
 
