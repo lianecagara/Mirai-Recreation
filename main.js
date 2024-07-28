@@ -392,6 +392,22 @@ async function main() {
     logger(error, "config");
     process.exit(1);
   }
+  console.log("\n●─LOADING COMMANDS─●\n");
+  await global.liane.loadAllCommands((err, file, command) => {
+    if (err) {
+      logger(err, file);
+    } else {
+      logger(`Loaded as "${command.config.name}"!`, file);
+    }
+  });
+  console.log("\n●─LOADING EVENTS─●\n");
+  await global.liane.loadAllEvents((err, file, event) => {
+    if (err) {
+      logger(err, file);
+    } else {
+      logger(`Loaded as "${event.config.name}"!`, file);
+    }
+  });
   const { config } = global;
   logger("Loading Bot Appstate...", "Appstate");
   let appState = null;
