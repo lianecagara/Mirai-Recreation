@@ -456,7 +456,9 @@ async function main() {
       return logger(err, "ListenError");
     }
     try {
-      await handleListen({ api, event });
+      await (
+        await handleListen({ api })
+      )({ api, event });
     } catch (error) {
       logger(err, "ListenError");
     }
