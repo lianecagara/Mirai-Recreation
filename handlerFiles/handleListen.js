@@ -1,4 +1,11 @@
+import xUsers from "./database/handler/users.js";
+import xThreads from "./database/handler/threads.js";
+import xCurrencies from "./database/handler/currencies.js";
+
 export async function handleListen({ api, ...extra1 }) {
+  const Users = await xUsers({ api });
+  const Threads = await xThreads({ api });
+  const Currencies = await xCurrencies({ api, Users });
   const handlerKeys = [
     "handleCommand",
     "handleReply",
@@ -10,13 +17,22 @@ export async function handleListen({ api, ...extra1 }) {
   const handlers = {};
   for (const handlerKey of handlerKeys) {
     const handler = require(`./${handlerKey}`);
-    handlers[handlerKey] = await handler({ api, ...extra1 });
+    handlers[handlerKey] = await handler({
+      api,
+      Users,
+      Threads,
+      Currencies,
+      ...extra1,
+    });
   }
 
   return async function ({ api, event, ...extras }) {
     const listenObj = {
       api,
       event,
+      Users,
+      Threads,
+      Currencies,
       ...extras,
     };
     switch (event.type) {
