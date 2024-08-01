@@ -23,7 +23,7 @@ export class UsersClass {
   async saveData(data) {
     try {
       if (!data) throw new Error("Data cannot be left blank");
-      await fsp.writeFile(path, JSON.stringify(data, null, 4));
+      await fsp.writeFile(this.path, JSON.stringify(data, null, 4));
       return true;
     } catch (error) {
       console.error(error);

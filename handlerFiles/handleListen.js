@@ -4,7 +4,7 @@ import { xCurrencies } from "./database/handler/currencies.js";
 
 export async function handleListen({ api, ...extra1 }) {
   const Users = await xUsers({ api });
-  const Threads = await xThreads({ api });
+  const Threads = await xThreads({ api, Users });
   const Currencies = await xCurrencies({ api, Users });
   const handlerKeys = [
     "handleCommand",
