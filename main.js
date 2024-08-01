@@ -178,7 +178,7 @@ global.liane = {
       if (typeof command.onLoad === "function") {
         await command.onLoad({ api: global.recodedExtras.api });
       }
-      const { dependencies } = config;
+      const { dependencies, envConfig } = config;
       if (dependencies) {
         for (const [name, version] of Object.entries(dependencies)) {
           const currentVer = pkg.dependencies[name];
@@ -187,6 +187,11 @@ global.liane = {
           }
           this.installPackage(name + (version ? `@${version}` : ""));
         }
+      }
+      if (envConfig && !global.config.configModule[config.name]) {
+        const configAll = { ...global.recodedExtras.config };
+        configAll.configModule[config.name] = envConfig;
+        await global.recodedExtras.saveConfig(configAll);
       }
       // this is helpful for debugging LMAO
       command.fileName = fileName;
@@ -407,6 +412,11 @@ async function main() {
   Object.defineProperty(global, "config", {
     get() {
       return global.recodedExtras.config;
+    },
+  });
+  Object.defineProperty(global, "configModule", {
+    get() {
+      return global.recodedExtras.config.configModule;
     },
   });
   try {
