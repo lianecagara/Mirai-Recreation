@@ -1,6 +1,6 @@
 import fsp from "fs/promises";
 
-export default async function ({ api, event, Users, Threads, ...extra1 }) {
+export default async function ({ api, Users, Threads, ...extra1 }) {
   // __dirname is available in ts-node .register() obviously
   const users = JSON.parse(
     await fsp.readFile(__dirname + "/database/data/users.json", "utf8"),

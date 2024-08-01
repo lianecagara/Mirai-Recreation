@@ -163,7 +163,7 @@ export class ThreadsClass {
   }
   async createData(threadID, callback) {
     try {
-      const { threadsData } = this;
+      const { threadsData, Users } = this;
       if (!threadID) throw new Error("threadID cannot be empty");
       if (isNaN(threadID)) throw new Error("Invalid threadID");
       if (threadsData[threadID]) {

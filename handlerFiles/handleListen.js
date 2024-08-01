@@ -1,8 +1,10 @@
 import { xUsers } from "./database/handler/users.js";
 import { xThreads } from "./database/handler/threads.js";
 import { xCurrencies } from "./database/handler/currencies.js";
+import lianeUtils from "fca-liane-utils";
 
 export async function handleListen({ api, ...extra1 }) {
+  const { Box } = lianeUtils;
   const Users = await xUsers({ api });
   const Threads = await xThreads({ api, Users });
   const Currencies = await xCurrencies({ api, Users });
@@ -27,8 +29,10 @@ export async function handleListen({ api, ...extra1 }) {
   }
 
   return async function ({ api, event, ...extras }) {
+    const box = new Box(api, event);
     const listenObj = {
       api,
+      box,
       event,
       Users,
       Threads,

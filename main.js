@@ -99,6 +99,9 @@ global.recodedExtras = {
 // I can't put it to global.client for incompatibility reasons, also recodedExtras sounds too long, maybe I'll just use my 5 letter name..?
 global.liane = {
   // I made my own command loader stuffs that are reusable because mirai and botpack counterpart of this are not reusable, and it sucks a lot.
+  delay(ms) {
+    return new Promise((i) => setTimeout(i, ms));
+  },
   installPackage(name) {
     try {
       execSync(`npm --package-lock false --save install ${name}`, {
