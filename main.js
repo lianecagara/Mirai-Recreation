@@ -383,6 +383,10 @@ const pkg = require("./package.json");
 // bot start logics..
 async function main() {
   logger(`Mirai Recoded v${pkg.version}`, "info");
+  logger(
+    `If you did not forked this project from lianecagara/Mirai-Recreation (GitHub), there is a chance that you are using an outdated version of this project.`,
+    "warn",
+  );
   Object.defineProperty(global, "config", {
     get() {
       return global.recodedExtras.config;

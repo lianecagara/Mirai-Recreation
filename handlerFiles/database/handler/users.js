@@ -259,6 +259,9 @@ export class UsersClass {
 /*
   Warning about inconsistencies,
   All methods in my reworked users.js has asynchronous callbacks that actually pauses the execution if you were to use "await" keyword while executing the method.
+
+  This users.js was based on YANDEVA/BotPack
+  And I can see that it is badly neglected.
 */
 
 export function xUsers({ api }) {
