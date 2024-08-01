@@ -20,6 +20,7 @@ export default async function ({ api, ...extra1 }) {
         threadInfo,
         threadData,
         commandBanned,
+        threadAllowNSFW,
       } = global.data;
       const { commands, cooldowns } = global.client;
       let { body = "", senderID = "", threadID = "", messageID = "" } = event;
@@ -68,7 +69,7 @@ export default async function ({ api, ...extra1 }) {
       if (adminOnly === true && !ADMINBOT.includes(senderID)) {
         return box.reply(replyAD);
       }
-      if (!ADMINBOT.includes(senderID)) {
+      if (!ADMINBOT.includes(senderID) && hasPrefix) {
         if (userBanned.has(senderID)) {
           const { reason = "Unknown", dateAdded = "Unknown" } =
             userBanned.get(senderID) ?? {};
@@ -89,6 +90,57 @@ export default async function ({ api, ...extra1 }) {
           await api.unsendMessage(ID);
           return;
         }
+        if (commandBanned.has(threadID) || commandBanned.has(senderID)) {
+          const banThreads = commandBanned.get(threadID) ?? [];
+          const banUsers = commandBanned.get(senderID) ?? [];
+          if (banThreads.includes(command.config.name)) {
+            const ID = await box.reply(
+              `❌ | Your thread is unable to use the command "${command.config.name}"`,
+            );
+
+            await delay(5000);
+            await api.unsendMessage(ID);
+            return;
+          }
+          if (banUsers.includes(command.config.name)) {
+            const ID = await box.reply(
+              `❌ | Your are unable to use the command "${command.config.name}"`,
+            );
+          }
+          await delay(5000);
+          await api.unsendMessage(ID);
+          return;
+        }
+      }
+      const { config, run } = command;
+      // usePrefix is true if not configured, is it your first time seeing "??="
+      config.usePrefix ??= true;
+
+      if (config.usePrefix === false && hasPrefix) {
+        // I've added strict mode because it feels cool, and doesn't break when installed in a normal mirai/botpack
+        if (config.strictMode === true) {
+          return box.reply(
+            `⚠️ | The command "${commandName}" doesn't work with prefix in strict mode!`,
+          );
+        }
+      }
+      if (config.usePrefix === true && !hasPrefix) {
+        if (config.strictMode === true) {
+          return box.reply(
+            `⚠️ | Please type ${PREFIX}${commandName} to use this command!`,
+          );
+        }
+      }
+      // LMAO nsfw
+      if (
+        String(config.commandCategory).toLowerCase() === "nsfw" &&
+        !threadAllowNSFW.includes(threadID)
+      ) {
+        const ID = await box.reply(
+          `❌ | The command "${config.name}" is an NSFW command and your thread is not allowed to use it.`,
+        );
+        await delay(5000);
+        await api.unsendMessage(ID);
       }
     } catch (error) {
       console.error(error);
