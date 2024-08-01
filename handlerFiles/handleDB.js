@@ -3,10 +3,10 @@ import fsp from "fs/promises";
 export default async function ({ api, event, Users, Threads, ...extra1 }) {
   // __dirname is available in ts-node .register() obviously
   const users = JSON.parse(
-    await fsp.readFile(__dirname + "/database/data/users.json"),
+    await fsp.readFile(__dirname + "/database/data/users.json", "utf8"),
   );
   const threads = JSON.parse(
-    await fsp.readFile(__dirname + "/database/data/threads.json"),
+    await fsp.readFile(__dirname + "/database/data/threads.json", "utf8"),
   );
   // I have a very bad feeling about the users and threads because they were loaded freakin once.
   const { logger } = global.liane;

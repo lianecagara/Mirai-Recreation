@@ -1,6 +1,6 @@
-import xUsers from "./database/handler/users.js";
-import xThreads from "./database/handler/threads.js";
-import xCurrencies from "./database/handler/currencies.js";
+import { xUsers } from "./database/handler/users.js";
+import { xThreads } from "./database/handler/threads.js";
+import { xCurrencies } from "./database/handler/currencies.js";
 
 export async function handleListen({ api, ...extra1 }) {
   const Users = await xUsers({ api });
