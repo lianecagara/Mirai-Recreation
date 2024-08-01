@@ -74,7 +74,7 @@ export default async function ({ api, ...extra1 }) {
           const { reason = "Unknown", dateAdded = "Unknown" } =
             userBanned.get(senderID) ?? {};
           const ID = await box.reply(
-            `❌ | You have been banned from using this bot.\nRaisins: ${reason}\nDate Added: ${dateAdded}`,
+            `❌ | You have been banned from using this bot.\nRaisins: ${reason}\nDate: ${dateAdded}`,
           );
           await delay(5000);
           await api.unsendMessage(ID);
@@ -84,7 +84,7 @@ export default async function ({ api, ...extra1 }) {
           const { reason = "Unknown", dateAdded = "Unknown" } =
             threadBanned.get(senderID) ?? {};
           const ID = await box.reply(
-            `❌ | Your thread have been banned from using this bot.\nRaisins: ${reason}\nDate Added: ${dateAdded}`,
+            `❌ | Your thread have been banned from using this bot.\nRaisins: ${reason}\nDate: ${dateAdded}`,
           );
           await delay(5000);
           await api.unsendMessage(ID);
@@ -141,6 +141,93 @@ export default async function ({ api, ...extra1 }) {
         );
         await delay(5000);
         await api.unsendMessage(ID);
+      }
+      let threadInfoo =
+        threadInfo.get(threadID) || (await Threads.getInfo(threadID));
+      const find = threadInfoo.adminIDs.find(
+        (uid) => uid?.id === senderID || uid === senderID,
+      );
+
+      // Me wondering why is it called "hasPermssion" instead of "hasPermission"
+      let permission = 0;
+      if (find) {
+        permission = 1;
+      }
+      if (ADMINBOT.includes(senderID)) {
+        permission = 2;
+      }
+      if (config.hasPermssion === 1) {
+        if (!find && !ADMINBOT.includes(senderID)) {
+          return box.reply(
+            `❌ | Only group admins can use the command "${config.name}"`,
+          );
+        }
+      }
+      if (config.hasPermssion === 2 && !ADMINBOT.includes(senderID)) {
+        return box.reply(
+          `❌ | Only bot admins are allowed to use the command "${config.name}"`,
+        );
+      }
+      if (!client.cooldowns.has(command.config.name)) {
+        client.cooldowns.set(command.config.name, new Map());
+      }
+      const timestamps =
+        command && command.config
+          ? client.cooldowns.get(command.config.name)
+          : undefined;
+
+      const expirationTime =
+        ((command && command.config && command.config.cooldowns) || 1) * 1000;
+      if (
+        timestamps &&
+        timestamps instanceof Map &&
+        timestamps.has(senderID) &&
+        dateNow < timestamps.get(senderID) + expirationTime
+      ) {
+        await box.react("⏳");
+        return box.reply(
+          `⏳ | Please wait ${(timestamps.get(senderID) + expirationTime - dateNow) / 1000} seconds before using this command again.`,
+        );
+      }
+      const langInstance = new global.liane.LangClass(command);
+      const getText2 = langInstance.getText.bind(langInstance);
+      // finally, command execution.
+      const ctx = {
+        ...extra2,
+        box,
+        api,
+        event,
+        args,
+        models,
+        Users,
+        Threads,
+        Currencies,
+        permssion,
+        getText: getText2,
+      };
+      if (typeof run !== "function") {
+        return box.reply(
+          `❌ | What the f this will never happen, this will never happen unless a dumbass tried to mess with the code.`,
+        );
+      }
+      activeCmd = true;
+      try {
+        await run({ ...ctx, box: null });
+        if (typeof command.modernEntry === "function") {
+          // You'll need to use module.exports.modernEntry to access the "box"
+          await command.modernEntry({ ...ctx });
+        }
+        timestamps.set(senderID, dateNow);
+      } catch (error) {
+        console.error(error);
+        return box.error(error);
+      }
+      activeCmd = false;
+      if (DeveloperMode === true) {
+        logger(
+          `Handling Command "${config.name}" | ${senderID} | ${threadID} | ${args.join(" ")}`,
+          "DEV",
+        );
       }
     } catch (error) {
       console.error(error);

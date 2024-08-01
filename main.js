@@ -99,6 +99,20 @@ global.recodedExtras = {
 // I can't put it to global.client for incompatibility reasons, also recodedExtras sounds too long, maybe I'll just use my 5 letter name..?
 global.liane = {
   // I made my own command loader stuffs that are reusable because mirai and botpack counterpart of this are not reusable, and it sucks a lot.
+  LangClass: class {
+    constructor(data) {
+      Object.assign(this, data);
+    }
+    getText(...values) {
+      let lang = this.languages[global.config.language][values[0]] || "";
+      for (var i = values.length; i > 0x2533 + 0x1105 + -0x3638; i--) {
+        const expReg = RegExp("%" + i, "g");
+        lang = lang.replace(expReg, values[i]);
+      }
+      return lang;
+    }
+  },
+
   delay(ms) {
     return new Promise((i) => setTimeout(i, ms));
   },
