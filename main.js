@@ -395,6 +395,13 @@ async function main() {
     logger(error, "config");
     process.exit(1);
   }
+  if (process.env.proceed !== "yes") {
+    logger(
+      "Please setup the environment variable with key 'proceed' and value 'yes' to proceed. This project is currently in development, I do not recommend messing with this mess.",
+    );
+
+    process.exit(1);
+  }
   console.log("\n●─LOADING COMMANDS─●\n");
   await global.liane.loadAllCommands((err, file, command) => {
     if (err) {
